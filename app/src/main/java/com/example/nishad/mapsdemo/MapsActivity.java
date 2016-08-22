@@ -1,6 +1,8 @@
 package com.example.nishad.mapsdemo;
 
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,16 +23,23 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks, LocationListener {
 
     private GoogleMap mMap;
-    GoogleApiClient googleApiClient;
-    LocationRequest locationRequest;
-    double lat = 0.0;
-    double lon = 0.0;
-    LatLng sydney;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private double lat = 0.0;
+    private double lon = 0.0;
+    private LatLng currentLocation;
+    private Geocoder geocoder;
+    private List<Address> addresses;
+    private boolean isMarkerSet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnConnectionFailedListener(this)
                 .addConnectionCallbacks(this)
                 .build();
+        geocoder = new Geocoder(this, Locale.getDefault());
     }
 
     /**
@@ -64,9 +74,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney, Australia, and move the camera.
-//        LatLng sydney = new LatLng(lat, lon);
-//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        LatLng currentLocation = new LatLng(lat, lon);
+//        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Marker in Sydney"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
     }
 
     @Override
@@ -109,12 +119,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(this, "onLocationChanged", Toast.LENGTH_SHORT).show();
-        lat = location.getLatitude();
-        lon = location.getLongitude();
-        sydney = new LatLng(lat, lon);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Current location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        if (!isMarkerSet) {
+//            Toast.makeText(this, "onLocationChanged", Toast.LENGTH_SHORT).show();
+            lat = location.getLatitude();
+            lon = location.getLongitude();
+            currentLocation = new LatLng(lat, lon);
+
+            try {
+                addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String city = addresses.get(0).getLocality();
+
+            mMap.addMarker(new MarkerOptions().position(currentLocation).title(city));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+
+            isMarkerSet = true;
+        }
     }
 
     @Override
