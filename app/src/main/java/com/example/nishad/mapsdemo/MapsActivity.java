@@ -1,9 +1,12 @@
 package com.example.nishad.mapsdemo;
 
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -40,6 +43,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Geocoder geocoder;
     private List<Address> addresses;
     private boolean isMarkerSet = false;
+    LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addConnectionCallbacks(this)
                 .build();
         geocoder = new Geocoder(this, Locale.getDefault());
+
+
     }
 
     /**
@@ -77,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        LatLng currentLocation = new LatLng(lat, lon);
 //        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
+
     }
 
     @Override
@@ -136,6 +143,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
 
             isMarkerSet = true;
+
+            //zoom add
+              mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+              mMap.addMarker(new MarkerOptions().position(new LatLng(lat, lon)).title("You are here!").snippet("Consider yourself located"));
+
+
         }
     }
 
